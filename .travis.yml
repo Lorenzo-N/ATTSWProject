@@ -1,0 +1,16 @@
+language: java
+jdk: openjdk8
+dist: xenial
+services:
+  - docker
+  - xvfb
+addons:
+  sonarcloud:
+    organization: "andreapuccia"
+    token: ${SONAR_TOKEN}
+install: skip
+cache:
+  directories:
+    - $HOME/.m2
+script:
+  - mvn -f pom.xml clean verify coveralls:report sonar:sonar
