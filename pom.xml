@@ -162,6 +162,11 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.5</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/Student.*</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -193,11 +198,18 @@
                 </executions>
                 <configuration>
                     <targetClasses>
-                        <!-- Add class to mutate-->
+                        <param>${project.groupId}.*.*</param>
                     </targetClasses>
                     <targetTests>
-                        <!-- Add class test-->
+                        <param>${project.groupId}.ut.*</param>
                     </targetTests>
+                    <excludedClasses>
+                        <param>${project.groupId}.model.Student</param>
+                    </excludedClasses>
+                    <excludedMethods>
+                        <param>equals</param>
+                        <param>hashCode</param>
+                    </excludedMethods>
                     <mutators>
                         <mutator>DEFAULTS</mutator>
                     </mutators>
