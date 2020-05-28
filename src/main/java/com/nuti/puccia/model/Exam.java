@@ -1,12 +1,18 @@
 package com.nuti.puccia.model;
 
+import javax.persistence.*;
 import java.util.Collection;
 import java.util.Objects;
 
+@Entity
 public class Exam {
 
+    @Id
+    @GeneratedValue
     private long id;
     private String name;
+    @ManyToMany
+    @OrderBy("surname, name")
     private Collection<Student> students;
 
     public Exam() {

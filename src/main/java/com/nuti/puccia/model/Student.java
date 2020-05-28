@@ -1,9 +1,14 @@
 package com.nuti.puccia.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.Objects;
 
-
+@Entity
 public class Student {
+    @Id
+    @GeneratedValue
     private long id;
     private String name;
     private String surname;
