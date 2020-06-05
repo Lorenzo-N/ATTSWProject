@@ -74,7 +74,7 @@ public class ExamReservationsSwingView extends JFrame implements ExamReservation
                 addReservationButton.setEnabled(true);
                 reservationLabel.setText(studentsList.getSelectedValue().toString());
             } else
-                reservationLabel.setText("Select a student to add a reservation");
+                reservationLabel.setText("Select a student to add");
         };
 
         // Enabling add reservation button and change reservation label when a student and an exam are selected
@@ -298,7 +298,7 @@ public class ExamReservationsSwingView extends JFrame implements ExamReservation
         panel6.add(addReservationButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         reservationLabel = new JLabel();
         reservationLabel.setName("ReservationLabel");
-        reservationLabel.setText("Select a student to add a reservation");
+        reservationLabel.setText("Select a student to add");
         panel6.add(reservationLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         errorLabel = new JLabel();
         Font errorLabelFont = this.$$$getFont$$$(null, Font.BOLD, 14, errorLabel.getFont());

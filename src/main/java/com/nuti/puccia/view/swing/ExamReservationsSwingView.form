@@ -257,7 +257,7 @@
                 </constraints>
                 <properties>
                   <name value="ReservationLabel"/>
-                  <text value="Select a student to add a reservation"/>
+                  <text value="Select a student to add"/>
                 </properties>
               </component>
             </children>
