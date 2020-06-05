@@ -1,4 +1,4 @@
-package com.nuti.puccia;
+package com.nuti.puccia.ut;
 
 import com.nuti.puccia.controller.Controller;
 import com.nuti.puccia.model.Exam;

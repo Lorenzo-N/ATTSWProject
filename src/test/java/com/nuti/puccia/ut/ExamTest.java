@@ -19,7 +19,7 @@ public class ExamTest {
     @Before
     public void setup() {
         students = new ArrayList<>();
-        exam = new Exam("ATTWS", students);
+        exam = new Exam("ATTSW", students);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class ExamTest {
         students.add(student);
         assertThatThrownBy(() -> exam.addStudent(student))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Student already present!");
+                .hasMessage("Student " + student.toString() + " already present in " + exam.toString() + "!");
     }
 
     @Test
@@ -49,22 +49,22 @@ public class ExamTest {
     }
 
     @Test
-    public void removeStudentFromExamWithEmptyExams() {
+    public void removeStudentFromExamWithEmptyStudents() {
         Student student = new Student("Andrea", "Puccia");
         assertThatThrownBy(() -> exam.removeStudent(student))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Students is Empty");
+                .hasMessage("Student " + student.toString() + " not present in " + exam.toString() + "!");
         assertThat(students).isEmpty();
     }
 
     @Test
-    public void removeStudentFromExamWithoutThisExam() {
+    public void removeStudentFromExamWithoutThisStudent() {
         Student student1 = new Student("Lorenzo", "Nuti");
         students.add(student1);
         Student student2 = new Student("Andrea", "Puccia");
         assertThatThrownBy(() -> exam.removeStudent(student2))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Student not present!");
+                .hasMessage("Student " + student2.toString() + " not present in " + exam.toString() + "!");
         assertThat(students).containsExactly(student1);
     }
 }

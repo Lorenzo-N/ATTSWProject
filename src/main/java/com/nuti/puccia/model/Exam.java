@@ -60,15 +60,20 @@ public class Exam {
 
     public void addStudent(Student student) {
         if (students.contains(student))
-            throw new IllegalArgumentException("Student already present!");
+            throw new IllegalArgumentException("Student " + student.toString() +
+                    " already present in " + this.toString() + "!");
         students.add(student);
     }
 
     public void removeStudent(Student student) {
-        if (students.isEmpty())
-            throw new IllegalArgumentException("Students is Empty");
         if (!students.contains(student))
-            throw new IllegalArgumentException("Student not present!");
+            throw new IllegalArgumentException("Student " + student.toString() +
+                    " not present in " + this.toString() + "!");
         students.remove(student);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
