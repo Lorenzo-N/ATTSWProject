@@ -204,6 +204,7 @@ public class ExamReservationsSwingView extends JFrame implements ExamReservation
     private void $$$setupUI$$$() {
         formPanel = new JPanel();
         formPanel.setLayout(new GridLayoutManager(4, 1, new Insets(10, 10, 20, 10), -1, -1));
+        formPanel.setMinimumSize(new Dimension(700, 315));
         formPanel.setPreferredSize(new Dimension(1000, 500));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(2, 3, new Insets(0, 0, 0, 0), -1, -1, true, false));
