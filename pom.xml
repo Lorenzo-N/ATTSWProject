@@ -185,7 +185,7 @@
                         </goals>
                         <configuration>
                             <includes>
-                                <include>**/*ITa.java</include>
+                                <include>**/*IT.java</include>
                             </includes>
                         </configuration>
                     </execution>
