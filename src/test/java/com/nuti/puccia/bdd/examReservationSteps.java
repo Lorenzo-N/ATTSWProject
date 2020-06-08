@@ -28,7 +28,10 @@ public class examReservationSteps {
     @When("The ExamReservation View is shown")
     public void the_Student_View_is_shown() {
         // start the Swing application
-        application("com.nuti.puccia.App").start();
+        application("com.nuti.puccia.App").withArgs(
+                "--username=test",
+                "--password=test"
+                ).start();
         // get a reference of its JFrame
         window = WindowFinder.findFrame(new GenericTypeMatcher<JFrame>(JFrame.class) {
             @Override
