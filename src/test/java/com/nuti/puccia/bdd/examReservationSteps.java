@@ -11,6 +11,7 @@ import org.junit.After;
 
 import javax.swing.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.swing.launcher.ApplicationLauncher.application;
 import static org.junit.Assert.assertEquals;
 
@@ -28,10 +29,7 @@ public class examReservationSteps {
     @When("The ExamReservation View is shown")
     public void the_Student_View_is_shown() {
         // start the Swing application
-        application("com.nuti.puccia.App").withArgs(
-                "--username=test",
-                "--password=test"
-                ).start();
+        application("com.nuti.puccia.App").start();
         // get a reference of its JFrame
         window = WindowFinder.findFrame(new GenericTypeMatcher<JFrame>(JFrame.class) {
             @Override
@@ -105,5 +103,7 @@ public class examReservationSteps {
     @Then("The student list contains elements with the following values$examplesTable")
     public void thenTheStudentListContainsElementsWithTheFollowingValues(ExamplesTable examplesTable) {
         window.textBox("ExamNameText").enterText("ciaooo");
+        assertThat(window.textBox("ExamNameText").text()).isEqualTo("ciaooo");
+
     }
 }

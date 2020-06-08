@@ -296,9 +296,8 @@
                                     <time>20000</time>
                                 </wait>
                                 <env>
+                                    <MYSQL_ALLOW_EMPTY_PASSWORD>1</MYSQL_ALLOW_EMPTY_PASSWORD>
                                     <MYSQL_DATABASE>attsw</MYSQL_DATABASE>
-                                    <MYSQL_USER>test</MYSQL_USER>
-                                    <MYSQL_PASSWORD>test</MYSQL_PASSWORD>
                                 </env>
                                 <ports>
                                     <port>3306:3306</port>
