@@ -26,6 +26,7 @@ public class examReservationSteps {
             window.cleanUp();
     }
 
+    @Given("The ExamReservation View is shown")
     @When("The ExamReservation View is shown")
     public void the_Student_View_is_shown() {
         // start the Swing application
@@ -37,6 +38,9 @@ public class examReservationSteps {
                 return "Exam Reservations".equals(frame.getTitle()) && frame.isShowing();
             }
         }).using(BasicRobot.robotWithCurrentAwtHierarchy());
+//        window.iconify().deiconify().focus();
+//        window.iconify().deiconify();
+//        window.textBox("ExamNameText").enterText("");
     }
 
     @BeforeScenario
@@ -102,8 +106,17 @@ public class examReservationSteps {
 
     @Then("The student list contains elements with the following values$examplesTable")
     public void thenTheStudentListContainsElementsWithTheFollowingValues(ExamplesTable examplesTable) {
-        window.textBox("ExamNameText").enterText("ciaooo");
-        assertThat(window.textBox("ExamNameText").text()).isEqualTo("ciaooo");
 
+
+    }
+
+    @When("User write")
+    public void whenUserWrite() {
+        window.textBox("ExamNameText").enterText("ciaooo");
+    }
+
+    @Then("Is written")
+    public void thenIsWritten() {
+        assertThat(window.textBox("ExamNameText").text()).isEqualTo("ciaooo");
     }
 }

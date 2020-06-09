@@ -179,6 +179,7 @@
                 <version>2.22.1</version>
                 <executions>
                     <execution>
+                        <id>Integrations</id>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
@@ -189,27 +190,17 @@
                             </includes>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-
-            <!-- BDD -->
-            <plugin>
-                <groupId>org.jbehave</groupId>
-                <artifactId>jbehave-maven-plugin</artifactId>
-                <version>4.6.3</version>
-                <executions>
                     <execution>
-                        <id>run-stories</id>
-                        <phase>integration-test</phase>
+                        <id>BDD</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
                         <configuration>
                             <includes>
                                 <include>**/*BDD.java</include>
                             </includes>
-                            <scope>test</scope>
                         </configuration>
-                        <goals>
-                            <goal>run-stories-as-embeddables</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
