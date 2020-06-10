@@ -1,5 +1,6 @@
 package com.nuti.puccia.bdd;
 
+import com.nuti.puccia.App;
 import com.nuti.puccia.model.Exam;
 import com.nuti.puccia.model.Student;
 import org.assertj.swing.core.BasicRobot;
@@ -45,18 +46,20 @@ public class examReservationSteps {
         settings.put("javax.persistence.jdbc.url", "jdbc:mysql://localhost:3306/attsw");
         settings.put("javax.persistence.jdbc.user", "root");
         settings.put("javax.persistence.jdbc.password", "");
-        entityManagerFactory = Persistence.createEntityManagerFactory("APP", settings);
+//        entityManagerFactory = Persistence.createEntityManagerFactory("APP", settings);
+        entityManager = App.getEntityManager(settings);
     }
 
     @AfterStories
     public void tearDownStories() {
-        entityManagerFactory.close();
+//        entityManagerFactory.close();
+        App.closeConnection();
     }
 
     @BeforeScenario
     public void setUp() {
         System.out.println("Prima di ogni scenario!");
-        entityManager = entityManagerFactory.createEntityManager();
+//        entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         entityManager.createQuery("DELETE FROM Exam e").executeUpdate();
         entityManager.createQuery("DELETE FROM Student s").executeUpdate();
@@ -69,7 +72,7 @@ public class examReservationSteps {
 //            window.close();
             window.cleanUp();
         }
-        entityManager.close();
+//        entityManager.close();
     }
 
     private void addStudentToDataBase(Student student) {
@@ -118,6 +121,7 @@ public class examReservationSteps {
     }
 
     @When("The user selects an Exam")
+    @Given("The user selects an Exam")
     public void whenTheUserSelectsAnExam() {
         window.list("ExamList").selectItem(Pattern.compile(".*" + exam1 + ".*"));
     }
@@ -154,8 +158,36 @@ public class examReservationSteps {
 
     @Then("Exam list contains new exam info")
     public void thenExamListContainsNewExamInfo() {
-        assertThat(window.list("ExamList").contents())
+        assertThat(window.list("ExamList").contents()).hasSize(3)
                 .anySatisfy(e -> assertThat(e).contains(exam3));
     }
 
+    @Given("The user enter student name and surname")
+    public void givenTheUserEnterStudentNameAndSurname() {
+        window.textBox("StudentNameText").enterText(name3);
+        window.textBox("StudentSurnameText").enterText(surname3);
+    }
+
+    @Then("Student list contains new student info")
+    public void thenStudentListContainsNewStudentInfo() {
+        assertThat(window.list("StudentList").contents()).hasSize(3)
+                .anySatisfy(e -> assertThat(e).contains(name3, surname3));
+    }
+
+    @Given("The user selects a Student")
+    public void givenTheUserSelectsAStudent() {
+        window.list("StudentList").selectItem(Pattern.compile(".*" + surname2+" "+name2 + ".*"));
+    }
+
+    @Then("Reservation list contains selected student info")
+    public void thenReservationListContainsSelectedStudentInfo() {
+        assertThat(window.list("ReservationList").contents()).hasSize(2)
+                .anySatisfy(e -> assertThat(e).contains(name2, surname2));
+    }
+
+    @Then("Student list not contains selected student info")
+    public void thenStudentListNotContainsSelectedStudentInfo() {
+        assertThat(window.list("StudentList").contents()).hasSize(1)
+                .noneMatch(e -> e.contains(surname2+" "+name2));
+    }
 }
