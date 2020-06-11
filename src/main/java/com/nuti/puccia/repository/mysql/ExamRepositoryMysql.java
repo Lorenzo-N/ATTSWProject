@@ -67,6 +67,7 @@ public class ExamRepositoryMysql implements ExamRepository {
 
     @Override
     public Exam findById(long id) {
+        entityManager.clear();
         return entityManager.find(Exam.class, id);
     }
 }

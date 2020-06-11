@@ -35,6 +35,7 @@ public class StudentRepositoryMysql implements StudentRepository {
 
     @Override
     public Student findById(long id) {
+        entityManager.clear();
         return entityManager.find(Student.class, id);
     }
 }
