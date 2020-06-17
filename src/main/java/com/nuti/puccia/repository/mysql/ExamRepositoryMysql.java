@@ -6,6 +6,7 @@ import com.nuti.puccia.repository.ExamRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -18,9 +19,14 @@ public class ExamRepositoryMysql implements ExamRepository {
 
     @Override
     public void deleteExam(Exam exam) {
-        entityManager.getTransaction().begin();
-        entityManager.remove(exam);
-        entityManager.getTransaction().commit();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.remove(exam);
+            entityManager.getTransaction().commit();
+        }catch (Exception e){
+            System.out.println(e.getMessage()+e.getClass());
+            entityManager.getTransaction().rollback();
+        }
     }
 
     @Override
@@ -35,7 +41,9 @@ public class ExamRepositoryMysql implements ExamRepository {
         try {
             entityManager.getTransaction().begin();
             exam.addStudent(student);
-        } finally {
+        } catch (Exception e){
+            System.out.println(e.getMessage()+e.getClass());
+        } finally{
             entityManager.getTransaction().commit();
             entityManager.refresh(exam);
         }
@@ -46,7 +54,9 @@ public class ExamRepositoryMysql implements ExamRepository {
         try {
             entityManager.getTransaction().begin();
             exam.removeStudent(student);
-        } finally {
+        } catch (Exception e){
+            System.out.println(e.getMessage()+e.getClass());
+        } finally{
             entityManager.getTransaction().commit();
         }
     }

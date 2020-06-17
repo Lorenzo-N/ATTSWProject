@@ -13,8 +13,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.*;
+import static org.awaitility.Awaitility.await;
 
 public class ExamRepositoryIT {
     private static EntityManagerFactory entityManagerFactory;
@@ -171,6 +175,83 @@ public class ExamRepositoryIT {
         assertThat(exam1.getStudents()).containsExactly(student2);
         assertThat(exam2.getStudents()).containsExactly(student3);
     }
+
+    @Test
+    public void deleteExamConcurrent() {
+        addTestStudentToDataBase(student1);
+        addTestStudentToDataBase(student2);
+        Exam exam1 = new Exam("ATTSW", new ArrayList<>(Arrays.asList(student1, student2)));
+        addTestExamToDataBase(exam1);
+        List<EntityManager> entityManagerList = new ArrayList<>();
+        List<Exam> examList = new ArrayList<>();
+        for(int i=0;i<10;i++) {
+            entityManagerList.add(entityManagerFactory.createEntityManager());
+            examList.add(entityManagerList.get(i).find(Exam.class,exam1.getId()));
+        }
+        List<Thread> threads = IntStream.range(0, 10).mapToObj(i -> new Thread(
+                () -> {
+                    new ExamRepositoryMysql(entityManagerList.get(i)).deleteExam(examList.get(i));
+                    entityManagerList.get(i).close();
+                }))
+                .peek(Thread::start).collect(Collectors.toList());
+        await().atMost(10, SECONDS).
+                until(() -> threads.stream().noneMatch(Thread::isAlive));
+        assertThat(getExamsFromDataBase()).isEmpty();
+    }
+
+    @Test
+    public void deleteReservationConcurrent() {
+        addTestStudentToDataBase(student1);
+        addTestStudentToDataBase(student2);
+        Exam exam1 = new Exam("ATTSW", new ArrayList<>(Arrays.asList(student1, student2)));
+        addTestExamToDataBase(exam1);
+        List<EntityManager> entityManagerList = new ArrayList<>();
+        List<Exam> examList = new ArrayList<>();
+        List<Student> studentList = new ArrayList<>();
+        for(int i=0;i<10;i++) {
+            entityManagerList.add(entityManagerFactory.createEntityManager());
+            examList.add(entityManagerList.get(i).find(Exam.class,exam1.getId()));
+            studentList.add(entityManagerList.get(i).find(Student.class,student1.getId()));
+        }
+        List<Thread> threads = IntStream.range(0, 10).mapToObj(i -> new Thread(
+                () -> {
+                    new ExamRepositoryMysql(entityManagerList.get(i))
+                            .deleteReservation(examList.get(i),studentList.get(i));
+                }))
+                .peek(Thread::start).collect(Collectors.toList());
+        await().atMost(10, SECONDS).
+                until(() -> threads.stream().noneMatch(Thread::isAlive));
+        entityManager.refresh(exam1);
+        assertThat(exam1.getStudents()).containsExactly(student2);
+    }
+
+    @Test
+    public void addReservationConcurrent() {
+        addTestStudentToDataBase(student1);
+        addTestStudentToDataBase(student2);
+        Exam exam1 = new Exam("ATTSW", new ArrayList<>(Collections.singletonList(student2)));
+        addTestExamToDataBase(exam1);
+        List<EntityManager> entityManagerList = new ArrayList<>();
+        List<Exam> examList = new ArrayList<>();
+        List<Student> studentList = new ArrayList<>();
+        for(int i=0;i<10;i++) {
+            entityManagerList.add(entityManagerFactory.createEntityManager());
+            examList.add(entityManagerList.get(i).find(Exam.class,exam1.getId()));
+            studentList.add(entityManagerList.get(i).find(Student.class,student1.getId()));
+        }
+        List<Thread> threads = IntStream.range(0, 10).mapToObj(i -> new Thread(
+                () -> {
+                    new ExamRepositoryMysql(entityManagerList.get(i))
+                            .addReservation(examList.get(i),studentList.get(i));
+                }))
+                .peek(Thread::start).collect(Collectors.toList());
+        await().atMost(10, SECONDS).
+                until(() -> threads.stream().noneMatch(Thread::isAlive));
+        entityManager.refresh(exam1);
+        assertThat(exam1.getStudents()).containsExactly(student2,student1);
+    }
+
+
 
 
     private void addTestExamToDataBase(Exam exam) {
