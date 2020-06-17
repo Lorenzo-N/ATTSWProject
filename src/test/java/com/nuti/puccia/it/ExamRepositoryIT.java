@@ -9,10 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -203,7 +200,7 @@ public class ExamRepositoryIT {
     public void deleteReservationConcurrent() {
         addTestStudentToDataBase(student1);
         addTestStudentToDataBase(student2);
-        Exam exam1 = new Exam("ATTSW", new ArrayList<>(Arrays.asList(student1, student2)));
+        Exam exam1 = new Exam("ATTSW", new HashSet<>(Arrays.asList(student1, student2)));
         addTestExamToDataBase(exam1);
         List<EntityManager> entityManagerList = new ArrayList<>();
         List<Exam> examList = new ArrayList<>();
@@ -229,7 +226,7 @@ public class ExamRepositoryIT {
     public void addReservationConcurrent() {
         addTestStudentToDataBase(student1);
         addTestStudentToDataBase(student2);
-        Exam exam1 = new Exam("ATTSW", new ArrayList<>(Collections.singletonList(student2)));
+        Exam exam1 = new Exam("ATTSW", new HashSet<>(Collections.singletonList(student2)));
         addTestExamToDataBase(exam1);
         List<EntityManager> entityManagerList = new ArrayList<>();
         List<Exam> examList = new ArrayList<>();
@@ -239,6 +236,12 @@ public class ExamRepositoryIT {
             examList.add(entityManagerList.get(i).find(Exam.class,exam1.getId()));
             studentList.add(entityManagerList.get(i).find(Student.class,student1.getId()));
         }
+//        new ExamRepositoryMysql(entityManagerList.get(0))
+//                .addReservation(examList.get(0),studentList.get(0));
+//        new ExamRepositoryMysql(entityManagerList.get(1))
+//                .addReservation(examList.get(1),studentList.get(1));
+//        new ExamRepositoryMysql(entityManagerList.get(2))
+//                .addReservation(examList.get(2),studentList.get(2));
         List<Thread> threads = IntStream.range(0, 10).mapToObj(i -> new Thread(
                 () -> {
                     new ExamRepositoryMysql(entityManagerList.get(i))

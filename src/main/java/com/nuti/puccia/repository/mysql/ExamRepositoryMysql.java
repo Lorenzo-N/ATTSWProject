@@ -41,11 +41,12 @@ public class ExamRepositoryMysql implements ExamRepository {
         try {
             entityManager.getTransaction().begin();
             exam.addStudent(student);
+            entityManager.getTransaction().commit();
         } catch (Exception e){
             System.out.println(e.getMessage()+e.getClass());
         } finally{
-            entityManager.getTransaction().commit();
-            entityManager.refresh(exam);
+//            entityManager.getTransaction().commit();
+//            entityManager.refresh(exam);
         }
     }
 
@@ -54,6 +55,7 @@ public class ExamRepositoryMysql implements ExamRepository {
         try {
             entityManager.getTransaction().begin();
             exam.removeStudent(student);
+//            entityManager.getTransaction().commit();
         } catch (Exception e){
             System.out.println(e.getMessage()+e.getClass());
         } finally{
