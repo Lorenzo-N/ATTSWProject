@@ -28,6 +28,7 @@ public class Exam {
         this.students = students;
     }
 
+
     public long getId() {
         return id;
     }
@@ -71,9 +72,9 @@ public class Exam {
     }
 
     public void removeStudent(Student student) {
-        if (!students.contains(student))
-            throw new IllegalArgumentException("Student " + student.toString() +
-                    " not present in " + this.toString() + "!");
+//        if (!students.contains(student))
+//            throw new IllegalArgumentException("Student " + student.toString() +
+//                    " not present in " + this.toString() + "!");
         students.remove(student);
     }
 

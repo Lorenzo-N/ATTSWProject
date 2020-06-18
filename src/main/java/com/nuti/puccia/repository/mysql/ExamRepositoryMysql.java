@@ -6,7 +6,6 @@ import com.nuti.puccia.repository.ExamRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class ExamRepositoryMysql implements ExamRepository {
             entityManager.remove(exam);
             entityManager.getTransaction().commit();
         }catch (Exception e){
-            System.out.println(e.getMessage()+e.getClass());
+            System.out.println(e.getMessage()+e.getClass()+"Delete Exam");
             entityManager.getTransaction().rollback();
         }
     }
@@ -42,8 +41,10 @@ public class ExamRepositoryMysql implements ExamRepository {
             entityManager.getTransaction().begin();
             exam.addStudent(student);
             entityManager.getTransaction().commit();
+            entityManager.refresh(exam);
         } catch (Exception e){
-            System.out.println(e.getMessage()+e.getClass());
+            System.out.println(e.getMessage()+e.getClass()+"Add Reservation");
+            entityManager.getTransaction().rollback();
         } finally{
 //            entityManager.getTransaction().commit();
 //            entityManager.refresh(exam);
@@ -55,11 +56,12 @@ public class ExamRepositoryMysql implements ExamRepository {
         try {
             entityManager.getTransaction().begin();
             exam.removeStudent(student);
-//            entityManager.getTransaction().commit();
-        } catch (Exception e){
-            System.out.println(e.getMessage()+e.getClass());
-        } finally{
             entityManager.getTransaction().commit();
+        } catch (Exception e){
+            System.out.println(e.getMessage()+e.getClass()+"Add Reservation");
+            entityManager.getTransaction().rollback();
+        } finally{
+//            entityManager.getTransaction().commit();
         }
     }
 
