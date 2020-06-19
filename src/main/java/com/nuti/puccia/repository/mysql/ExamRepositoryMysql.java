@@ -6,6 +6,7 @@ import com.nuti.puccia.repository.ExamRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -18,51 +19,22 @@ public class ExamRepositoryMysql implements ExamRepository {
 
     @Override
     public void deleteExam(Exam exam) {
-        try {
-            entityManager.getTransaction().begin();
-            entityManager.remove(exam);
-            entityManager.getTransaction().commit();
-        }catch (Exception e){
-            System.out.println(e.getMessage()+e.getClass()+"Delete Exam");
-            entityManager.getTransaction().rollback();
-        }
+        entityManager.remove(exam);
     }
 
     @Override
     public void addExam(Exam exam) {
-        entityManager.getTransaction().begin();
         entityManager.persist(exam);
-        entityManager.getTransaction().commit();
     }
 
     @Override
     public void addReservation(Exam exam, Student student) {
-        try {
-            entityManager.getTransaction().begin();
-            exam.addStudent(student);
-            entityManager.getTransaction().commit();
-            entityManager.refresh(exam);
-        } catch (Exception e){
-            System.out.println(e.getMessage()+e.getClass()+"Add Reservation");
-            entityManager.getTransaction().rollback();
-        } finally{
-//            entityManager.getTransaction().commit();
-//            entityManager.refresh(exam);
-        }
+        exam.addStudent(student);
     }
 
     @Override
     public void deleteReservation(Exam exam, Student student) {
-        try {
-            entityManager.getTransaction().begin();
-            exam.removeStudent(student);
-            entityManager.getTransaction().commit();
-        } catch (Exception e){
-            System.out.println(e.getMessage()+e.getClass()+"Add Reservation");
-            entityManager.getTransaction().rollback();
-        } finally{
-//            entityManager.getTransaction().commit();
-        }
+        exam.removeStudent(student);
     }
 
     @Override
@@ -70,9 +42,11 @@ public class ExamRepositoryMysql implements ExamRepository {
         TypedQuery<Exam> query = entityManager.createQuery("select e from Exam e where :student member of e.students", Exam.class);
         query.setParameter("student", student);
         List<Exam> exams = query.getResultList();
-        entityManager.getTransaction().begin();
         exams.forEach(exam -> exam.removeStudent(student));
-        entityManager.getTransaction().commit();
+
+//        Query query = entityManager.createQuery("delete from Exam.students s where :student = s");
+//        query.setParameter("student", student);
+//        query.executeUpdate();
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.nuti.puccia.it;
 import com.nuti.puccia.model.Exam;
 import com.nuti.puccia.model.Student;
 import com.nuti.puccia.repository.mysql.ExamRepositoryMysql;
+import com.nuti.puccia.repository.mysql.StudentRepositoryMysql;
+import com.nuti.puccia.transaction_manager.TransactionFunction;
 import org.junit.*;
 
 import javax.persistence.EntityManager;
@@ -10,22 +12,19 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.function.Function;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.*;
-import static org.awaitility.Awaitility.await;
 
-public class ExamRepositoryIT {
+public class ExamRepositoryMysqlIT {
     private static EntityManagerFactory entityManagerFactory;
     private EntityManager entityManager;
 
     private ExamRepositoryMysql examRepository;
 
-    private final Student student1 = new Student("Andrea", "Puccia");
-    private final Student student2 = new Student("Lorenzo", "Nuti");
-    private final Student student3 = new Student("Mario", "Rossi");
+    private Student student1;
+    private Student student2;
+    private Student student3;
 
     @BeforeClass
     public static void setUpClass() {
@@ -41,6 +40,10 @@ public class ExamRepositoryIT {
         entityManager.getTransaction().commit();
 
         examRepository = new ExamRepositoryMysql(entityManager);
+
+        student1 = new Student("Andrea", "Puccia");
+        student2 = new Student("Lorenzo", "Nuti");
+        student3 = new Student("Mario", "Rossi");
     }
 
     @After
@@ -71,19 +74,21 @@ public class ExamRepositoryIT {
     public void addNewExamToDatabase() {
         Exam exam1 = new Exam("ATTSW", new HashSet<>());
         addTestExamToDataBase(exam1);
-        Exam exam2 = new Exam("Analisi", new ArrayList<>());
+        Exam exam2 = new Exam("Analisi", new HashSet<>());
+        entityManager.getTransaction().begin();
         examRepository.addExam(exam2);
+        entityManager.getTransaction().commit();
         assertThat(getExamsFromDataBase()).contains(exam1, exam2);
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
     }
 
     @Test
     public void deleteExamFromDataBase() {
         Exam exam = new Exam("ATTSW", new HashSet<>());
         addTestExamToDataBase(exam);
+        entityManager.getTransaction().begin();
         examRepository.deleteExam(exam);
+        entityManager.getTransaction().commit();
         assertThat(getExamsFromDataBase()).isEmpty();
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
     }
 
     @Test
@@ -110,8 +115,9 @@ public class ExamRepositoryIT {
 
         Exam exam = new Exam("ATTSW", new HashSet<>(Arrays.asList(student2, student3)));
         addTestExamToDataBase(exam);
+        entityManager.getTransaction().begin();
         examRepository.addReservation(exam, student1);
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
+        entityManager.getTransaction().commit();
         assertThat(exam.getStudents()).containsExactly(student2, student1, student3);
         entityManager.refresh(exam);
         assertThat(exam.getStudents()).containsExactly(student2, student1, student3);
@@ -122,9 +128,9 @@ public class ExamRepositoryIT {
         addTestStudentToDataBase(student1);
         Exam exam = new Exam("ATTSW", new HashSet<>(Collections.singletonList(student1)));
         addTestExamToDataBase(exam);
-//        assertThatThrownBy(() -> examRepository.addReservation(exam, student1))
-//                .isInstanceOf(IllegalArgumentException.class);
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
+        entityManager.getTransaction().begin();
+        examRepository.addReservation(exam, student1);
+        entityManager.getTransaction().commit();
         entityManager.refresh(exam);
         assertThat(exam.getStudents()).containsExactly(student1);
     }
@@ -135,8 +141,9 @@ public class ExamRepositoryIT {
         addTestStudentToDataBase(student);
         Exam exam = new Exam("ATTSW", new HashSet<>(Collections.singletonList(student)));
         addTestExamToDataBase(exam);
+        entityManager.getTransaction().begin();
         examRepository.deleteReservation(exam, student);
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
+        entityManager.getTransaction().commit();
         entityManager.refresh(exam);
         assertThat(exam.getStudents()).isEmpty();
     }
@@ -147,9 +154,9 @@ public class ExamRepositoryIT {
         addTestStudentToDataBase(student2);
         Exam exam = new Exam("ATTSW", new HashSet<>(Collections.singletonList(student1)));
         addTestExamToDataBase(exam);
-//        assertThatThrownBy(() -> examRepository.deleteReservation(exam, student2))
-//                .isInstanceOf(IllegalArgumentException.class);
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
+        entityManager.getTransaction().begin();
+        examRepository.deleteReservation(exam, student2);
+        entityManager.getTransaction().commit();
         entityManager.refresh(exam);
         assertThat(exam.getStudents()).containsExactly(student1);
     }
@@ -165,96 +172,15 @@ public class ExamRepositoryIT {
         Exam exam2 = new Exam("Analisi", new HashSet<>(Arrays.asList(student1, student3)));
         addTestExamToDataBase(exam2);
 
+        entityManager.getTransaction().begin();
         examRepository.deleteStudentReservations(student1);
+        entityManager.getTransaction().commit();
         assertThat(entityManager.getTransaction().isActive()).isFalse();
         entityManager.refresh(exam1);
         entityManager.refresh(exam2);
         assertThat(exam1.getStudents()).containsExactly(student2);
         assertThat(exam2.getStudents()).containsExactly(student3);
     }
-
-    @Test
-    public void deleteExamConcurrent() {
-        addTestStudentToDataBase(student1);
-        addTestStudentToDataBase(student2);
-        Exam exam1 = new Exam("ATTSW", new HashSet<>(Arrays.asList(student1, student2)));
-        addTestExamToDataBase(exam1);
-        List<EntityManager> entityManagerList = new ArrayList<>();
-        List<Exam> examList = new ArrayList<>();
-        for(int i=0;i<10;i++) {
-            entityManagerList.add(entityManagerFactory.createEntityManager());
-            examList.add(entityManagerList.get(i).find(Exam.class,exam1.getId()));
-        }
-        List<Thread> threads = IntStream.range(0, 10).mapToObj(i -> new Thread(
-                () -> {
-                    new ExamRepositoryMysql(entityManagerList.get(i)).deleteExam(examList.get(i));
-                    entityManagerList.get(i).close();
-                }))
-                .peek(Thread::start).collect(Collectors.toList());
-        await().atMost(10, SECONDS).
-                until(() -> threads.stream().noneMatch(Thread::isAlive));
-        assertThat(getExamsFromDataBase()).isEmpty();
-    }
-
-    @Test
-    public void deleteReservationConcurrent() {
-        addTestStudentToDataBase(student1);
-        addTestStudentToDataBase(student2);
-        Exam exam1 = new Exam("ATTSW", new HashSet<>(Arrays.asList(student1, student2)));
-        addTestExamToDataBase(exam1);
-        List<EntityManager> entityManagerList = new ArrayList<>();
-        List<Exam> examList = new ArrayList<>();
-        List<Student> studentList = new ArrayList<>();
-        for(int i=0;i<10;i++) {
-            entityManagerList.add(entityManagerFactory.createEntityManager());
-            examList.add(entityManagerList.get(i).find(Exam.class,exam1.getId()));
-            studentList.add(entityManagerList.get(i).find(Student.class,student1.getId()));
-        }
-        List<Thread> threads = IntStream.range(0, 10).mapToObj(i -> new Thread(
-                () -> {
-                    new ExamRepositoryMysql(entityManagerList.get(i))
-                            .deleteReservation(examList.get(i),studentList.get(i));
-                }))
-                .peek(Thread::start).collect(Collectors.toList());
-        await().atMost(10, SECONDS).
-                until(() -> threads.stream().noneMatch(Thread::isAlive));
-        entityManager.refresh(exam1);
-        assertThat(exam1.getStudents()).containsExactly(student2);
-    }
-
-    @Test
-    public void addReservationConcurrent() {
-        addTestStudentToDataBase(student1);
-        addTestStudentToDataBase(student2);
-        Exam exam1 = new Exam("ATTSW", new HashSet<>(Collections.singletonList(student2)));
-        addTestExamToDataBase(exam1);
-        List<EntityManager> entityManagerList = new ArrayList<>();
-        List<Exam> examList = new ArrayList<>();
-        List<Student> studentList = new ArrayList<>();
-        for(int i=0;i<10;i++) {
-            entityManagerList.add(entityManagerFactory.createEntityManager());
-            examList.add(entityManagerList.get(i).find(Exam.class,exam1.getId()));
-            studentList.add(entityManagerList.get(i).find(Student.class,student1.getId()));
-        }
-//        new ExamRepositoryMysql(entityManagerList.get(0))
-//                .addReservation(examList.get(0),studentList.get(0));
-//        new ExamRepositoryMysql(entityManagerList.get(1))
-//                .addReservation(examList.get(1),studentList.get(1));
-//        new ExamRepositoryMysql(entityManagerList.get(2))
-//                .addReservation(examList.get(2),studentList.get(2));
-        List<Thread> threads = IntStream.range(0, 10).mapToObj(i -> new Thread(
-                () -> {
-                    new ExamRepositoryMysql(entityManagerList.get(i))
-                            .addReservation(examList.get(i),studentList.get(i));
-                }))
-                .peek(Thread::start).collect(Collectors.toList());
-        await().atMost(10, SECONDS).
-                until(() -> threads.stream().noneMatch(Thread::isAlive));
-        entityManager.refresh(exam1);
-        assertThat(exam1.getStudents()).containsExactly(student2,student1);
-    }
-
-
 
 
     private void addTestExamToDataBase(Exam exam) {

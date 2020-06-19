@@ -27,18 +27,19 @@ import java.util.logging.Logger;
 @Command(mixinStandardHelpOptions = true)
 public class App implements Callable<Void> {
 
-    private static EntityManagerFactory entityManagerFactory=null;
-    private static EntityManager entityManager=null;
+    private static EntityManagerFactory entityManagerFactory = null;
+    private static EntityManager entityManager = null;
 
-    public static EntityManager getEntityManager(Map<String, String> settings){
-        if(entityManagerFactory==null){
-            entityManagerFactory=Persistence.createEntityManagerFactory("APP",settings);
-            entityManager=entityManagerFactory.createEntityManager();
+    public static EntityManager getEntityManager(Map<String, String> settings) {
+        if (entityManagerFactory == null) {
+            entityManagerFactory = Persistence.createEntityManagerFactory("APP", settings);
+            entityManager = entityManagerFactory.createEntityManager();
         }
         return entityManager;
     }
-    public static void closeConnection(){
-        if(entityManagerFactory!=null){
+
+    public static void closeConnection() {
+        if (entityManagerFactory != null) {
             entityManager.close();
             entityManagerFactory.close();
         }
@@ -71,14 +72,12 @@ public class App implements Callable<Void> {
         settings.put("javax.persistence.jdbc.user", username);
         settings.put("javax.persistence.jdbc.password", password);
 
-//        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("APP", settings);
-//        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        EntityManager entityManager = App.getEntityManager(settings);
+        EntityManager em = App.getEntityManager(settings);
 
         EventQueue.invokeLater(() -> {
             try {
-                ExamRepository examRepository = new ExamRepositoryMysql(entityManager);
-                StudentRepository studentRepository = new StudentRepositoryMysql(entityManager);
+                ExamRepository examRepository = new ExamRepositoryMysql(em);
+                StudentRepository studentRepository = new StudentRepositoryMysql(em);
                 ServiceLayer serviceLayer = new ServiceLayer(studentRepository, examRepository);
                 ExamReservationsSwingView view = new ExamReservationsSwingView();
                 Controller controller = new Controller(view, serviceLayer);
@@ -90,11 +89,7 @@ public class App implements Callable<Void> {
             }
         });
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            App.closeConnection();
-//            entityManager.close();
-//            entityManagerFactory.close();
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(App::closeConnection));
         return null;
     }
 

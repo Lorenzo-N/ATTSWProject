@@ -12,9 +12,12 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class ExamReservationsSwingView extends JFrame implements ExamReservationsView {
+    private static final long serialVersionUID = 1L;
+
     private final DefaultListModel<Exam> examModel = new DefaultListModel<>();
     private final DefaultListModel<Student> reservationModel = new DefaultListModel<>();
     private final DefaultListModel<Student> studentModel = new DefaultListModel<>();
@@ -106,6 +109,7 @@ public class ExamReservationsSwingView extends JFrame implements ExamReservation
 
 
         DefaultListCellRenderer cellRender = new DefaultListCellRenderer() {
+            private static final long serialVersionUID = 1L;
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                           boolean isSelected, boolean cellHasFocus) {
@@ -122,7 +126,7 @@ public class ExamReservationsSwingView extends JFrame implements ExamReservation
         reservationsList.setCellRenderer(cellRender);
 
         // Click listeners
-        addExamButton.addActionListener(e -> controller.addExam(new Exam(examName.getText(), new ArrayList<>())));
+        addExamButton.addActionListener(e -> controller.addExam(new Exam(examName.getText(), new HashSet<>())));
 
         addStudentButton.addActionListener(e ->
                 controller.addStudent(new Student(studentName.getText(), studentSurname.getText())));

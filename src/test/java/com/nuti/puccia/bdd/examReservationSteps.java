@@ -64,18 +64,6 @@ public class examReservationSteps {
         App.closeConnection();
     }
 
-    private void addStudentToDataBase(Student student) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(student);
-        entityManager.getTransaction().commit();
-    }
-
-    private void addExamToDataBase(Exam exam) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(exam);
-        entityManager.getTransaction().commit();
-    }
-
     @Given("The Database contains few students and few exams")
     public void givenDatabaseContainsFewStudentsAndFewExams() {
         Student selectedStudent = new Student(selectedName, selectedSurname);
@@ -103,11 +91,11 @@ public class examReservationSteps {
     }
 
     // Exam
+
     @Given("The user enter exam name")
     public void givenTheUserEnterExamName() {
         window.textBox("ExamNameText").enterText(newExam);
     }
-
     @When("The user selects an Exam")
     @Given("The user selects an Exam")
     public void whenTheUserSelectsAnExam() {
@@ -134,12 +122,12 @@ public class examReservationSteps {
     }
 
     // Reservation
+
     @Then("Reservation list contains reservations info")
     public void thenReservationListContainsReservationsInfo() {
         assertThat(window.list("ReservationList").contents())
                 .anySatisfy(e -> assertThat(e).contains(reservationName, reservationSurname));
     }
-
     @Then("Reservation list contains selected student info")
     public void thenReservationListContainsSelectedStudentInfo() {
         assertThat(window.list("ReservationList").contents())
@@ -158,12 +146,12 @@ public class examReservationSteps {
     }
 
     // Student
+
     @Given("The user enter student name and surname")
     public void givenTheUserEnterStudentNameAndSurname() {
         window.textBox("StudentNameText").enterText(newName);
         window.textBox("StudentSurnameText").enterText(newSurname);
     }
-
     @Given("The user selects a Student")
     public void givenTheUserSelectsAStudent() {
         window.list("StudentList").selectItem(Pattern.compile(".*" + selectedSurname + " " + selectedName + ".*"));
@@ -197,5 +185,18 @@ public class examReservationSteps {
     public void thenErrorStudentAlreadyPresentIsShown() {
         assertThat(window.label("ErrorLabel").text()).containsPattern(Pattern.compile(".*" + reservationSurname + " " + reservationName + ".*" + "already present" + ".*"));
 
+    }
+
+
+    private void addStudentToDataBase(Student student) {
+        entityManager.getTransaction().begin();
+        entityManager.persist(student);
+        entityManager.getTransaction().commit();
+    }
+
+    private void addExamToDataBase(Exam exam) {
+        entityManager.getTransaction().begin();
+        entityManager.persist(exam);
+        entityManager.getTransaction().commit();
     }
 }

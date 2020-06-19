@@ -18,15 +18,12 @@ public class storyRunnerBDD extends JUnitStories {
 
     @Override
     public Configuration configuration() {
-        return new MostUsefulConfiguration()
-                .useStoryReporterBuilder(new StoryReporterBuilder()
-                        .withDefaultFormats().withFormats(Format.CONSOLE, Format.HTML));
+        return new MostUsefulConfiguration().useStoryReporterBuilder(new StoryReporterBuilder().withDefaultFormats()
+                .withFormats(Format.CONSOLE, Format.HTML));
     }
 
     @Override
     public InjectableStepsFactory stepsFactory() {
-        return new InstanceStepsFactory(configuration(),
-                // Create an instance of the class with step definitions
-                new examReservationSteps());
+        return new InstanceStepsFactory(configuration(), new examReservationSteps());
     }
 }

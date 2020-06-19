@@ -1,7 +1,9 @@
 package com.nuti.puccia.model;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class Exam {
@@ -28,7 +30,6 @@ public class Exam {
         this.students = students;
     }
 
-
     public long getId() {
         return id;
     }
@@ -45,7 +46,7 @@ public class Exam {
         this.name = name;
     }
 
-    public Collection<Student> getStudents() {
+    public Set<Student> getStudents() {
         return students;
     }
 

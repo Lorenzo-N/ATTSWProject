@@ -26,8 +26,8 @@
         <assertj.version>3.16.1</assertj.version>
         <assertj.swing.version>3.9.2</assertj.swing.version>
         <mockito.version>3.3.3</mockito.version>
-        <testcontainer.version>1.14.2</testcontainer.version>
         <jbehave.version>4.6.3</jbehave.version>
+        <awaitility.version>4.0.2</awaitility.version>
 
         <!-- Sonar rules -->
         <sonar.issue.ignore.multicriteria>e11,e12,e13,e14,e15,e16</sonar.issue.ignore.multicriteria>
@@ -148,13 +148,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>mysql</artifactId>
-            <version>${testcontainer.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.jbehave</groupId>
             <artifactId>jbehave-core</artifactId>
             <version>${jbehave.version}</version>
@@ -164,7 +157,7 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.0.2</version>
+            <version>${awaitility.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -280,47 +273,47 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.27.2</version>
-                <configuration>
-                    <images>
-                        <image>
-                            <name>mysql:5.7</name>
-                            <run>
-                                <wait>
-                                    <log>mysqld: ready for connections</log>
-                                    <time>20000</time>
-                                </wait>
-                                <env>
-                                    <MYSQL_ALLOW_EMPTY_PASSWORD>1</MYSQL_ALLOW_EMPTY_PASSWORD>
-                                    <MYSQL_DATABASE>attsw</MYSQL_DATABASE>
-                                </env>
-                                <ports>
-                                    <port>3306:3306</port>
-                                </ports>
-                            </run>
-                        </image>
-                    </images>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>docker:start</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>docker:stop</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>io.fabric8</groupId>-->
+            <!--                <artifactId>docker-maven-plugin</artifactId>-->
+            <!--                <version>0.27.2</version>-->
+            <!--                <configuration>-->
+            <!--                    <images>-->
+            <!--                        <image>-->
+            <!--                            <name>mysql:5.7</name>-->
+            <!--                            <run>-->
+            <!--                                <wait>-->
+            <!--                                    <log>mysqld: ready for connections</log>-->
+            <!--                                    <time>20000</time>-->
+            <!--                                </wait>-->
+            <!--                                <env>-->
+            <!--                                    <MYSQL_ALLOW_EMPTY_PASSWORD>1</MYSQL_ALLOW_EMPTY_PASSWORD>-->
+            <!--                                    <MYSQL_DATABASE>attsw</MYSQL_DATABASE>-->
+            <!--                                </env>-->
+            <!--                                <ports>-->
+            <!--                                    <port>3306:3306</port>-->
+            <!--                                </ports>-->
+            <!--                            </run>-->
+            <!--                        </image>-->
+            <!--                    </images>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>docker:start</id>-->
+            <!--                        <phase>pre-integration-test</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>start</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                    <execution>-->
+            <!--                        <id>docker:stop</id>-->
+            <!--                        <phase>post-integration-test</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>stop</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
