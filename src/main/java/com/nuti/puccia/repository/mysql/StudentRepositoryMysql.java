@@ -17,17 +17,12 @@ public class StudentRepositoryMysql implements StudentRepository {
 
     @Override
     public void deleteStudent(Student student) {
-        entityManager.getTransaction().begin();
         entityManager.remove(student);
-        entityManager.getTransaction().commit();
     }
 
     @Override
     public void addStudent(Student student) {
-        entityManager.getTransaction().begin();
         entityManager.persist(student);
-        entityManager.getTransaction().commit();
-
     }
 
     @Override

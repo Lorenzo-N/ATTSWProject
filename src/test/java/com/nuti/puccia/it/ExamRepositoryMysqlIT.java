@@ -107,6 +107,7 @@ public class ExamRepositoryMysqlIT {
         assertThat(examRepository.findById(exam1.getId())).isEqualTo(exam1);
     }
 
+//    TODO handle refresh o exam when add reservation
     @Test
     public void addReservationToDataBase() {
         addTestStudentToDataBase(student1);
@@ -137,12 +138,11 @@ public class ExamRepositoryMysqlIT {
 
     @Test
     public void deleteReservationFromDataBase() {
-        Student student = new Student("Andrea", "Puccia");
-        addTestStudentToDataBase(student);
-        Exam exam = new Exam("ATTSW", new HashSet<>(Collections.singletonList(student)));
+        addTestStudentToDataBase(student1);
+        Exam exam = new Exam("ATTSW", new HashSet<>(Collections.singletonList(student1)));
         addTestExamToDataBase(exam);
         entityManager.getTransaction().begin();
-        examRepository.deleteReservation(exam, student);
+        examRepository.deleteReservation(exam, student1);
         entityManager.getTransaction().commit();
         entityManager.refresh(exam);
         assertThat(exam.getStudents()).isEmpty();

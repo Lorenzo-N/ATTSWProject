@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class StudentRepositoryIT {
+public class StudentRepositoryMysqlIT {
     private static EntityManagerFactory entityManagerFactory;
     private EntityManager entityManager;
 
@@ -67,7 +67,9 @@ public class StudentRepositoryIT {
     @Test
     public void addNewStudentToDatabase() {
         addTestStudentToDataBase(student1);
+        entityManager.getTransaction().begin();
         studentRepository.addStudent(student2);
+        entityManager.getTransaction().commit();
         assertThat(getStudentFromDataBase()).contains(student1, student2);
         assertThat(entityManager.getTransaction().isActive()).isFalse();
     }
@@ -75,7 +77,9 @@ public class StudentRepositoryIT {
     @Test
     public void deleteStudentFromDataBase() {
         addTestStudentToDataBase(student1);
+        entityManager.getTransaction().begin();
         studentRepository.deleteStudent(student1);
+        entityManager.getTransaction().commit();
         assertThat(getStudentFromDataBase()).isEmpty();
         assertThat(entityManager.getTransaction().isActive()).isFalse();
     }

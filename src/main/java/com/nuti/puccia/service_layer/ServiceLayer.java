@@ -4,22 +4,67 @@ import com.nuti.puccia.model.Exam;
 import com.nuti.puccia.model.Student;
 import com.nuti.puccia.repository.ExamRepository;
 import com.nuti.puccia.repository.StudentRepository;
+import com.nuti.puccia.transaction_manager.TransactionManager;
 
 import java.util.List;
 
 public class ServiceLayer {
 
+    private final TransactionManager transactionManager;
     private final StudentRepository studentRepository;
     private final ExamRepository examRepository;
 
+    public ServiceLayer(TransactionManager manger) {
+        transactionManager = manger;
+        studentRepository = null;
+        examRepository = null;
+    }
+
+    //    TODO delete this constructor after all
     public ServiceLayer(StudentRepository studentRepository, ExamRepository examRepository) {
         this.studentRepository = studentRepository;
         this.examRepository = examRepository;
+        transactionManager = null;
+    }
+
+    public List<Student> findAllStudents() {
+        return transactionManager.executeTransaction((
+                (examRepository, studentRepository) -> studentRepository.findAll()));
+    }
+
+    public List<Exam> findAllExams() {
+        return transactionManager.executeTransaction((
+                (examRepository, studentRepository) -> examRepository.findAll()));
     }
 
     public void addStudent(Student student) {
-        studentRepository.addStudent(student);
+            transactionManager.executeTransaction((
+                    (examRepository, studentRepository) -> {
+                        studentRepository.addStudent(student);
+                        return null;
+                    }));
     }
+
+    public void addExam(Exam exam) {
+        transactionManager.executeTransaction((
+                (examRepository, studentRepository) -> {
+                    examRepository.addExam(exam);
+                    return null;
+                }));
+    }
+
+    public void deleteReservation(Exam exam, Student student) {
+        transactionManager.executeTransaction((
+                (examRepository, studentRepository) -> {
+                    examRepository.deleteReservation(exam,student);
+                    return null;
+                }));
+    }
+
+//    TODO update this methods ↓
+//    All methods can throw an Exception that must be catch
+
+
 
     public void deleteStudent(Student student) {
         if (studentRepository.findById(student.getId()) == null)
@@ -28,13 +73,6 @@ public class ServiceLayer {
         studentRepository.deleteStudent(student);
     }
 
-    public List<Student> findAllStudents() {
-        return studentRepository.findAll();
-    }
-
-    public void addExam(Exam exam) {
-        examRepository.addExam(exam);
-    }
 
     public void deleteExam(Exam exam) {
         if (examRepository.findById(exam.getId()) == null)
@@ -42,15 +80,10 @@ public class ServiceLayer {
         examRepository.deleteExam(exam);
     }
 
-    public List<Exam> findAllExams() {
-        return examRepository.findAll();
-    }
 
     public void addReservation(Exam exam, Student student) {
         examRepository.addReservation(exam, student);
     }
 
-    public void deleteReservation(Exam exam, Student student) {
-        examRepository.deleteReservation(exam, student);
-    }
+
 }
