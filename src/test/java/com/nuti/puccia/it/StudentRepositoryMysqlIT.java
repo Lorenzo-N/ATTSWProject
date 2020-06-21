@@ -70,31 +70,17 @@ public class StudentRepositoryMysqlIT {
         entityManager.getTransaction().begin();
         studentRepository.addStudent(student2);
         entityManager.getTransaction().commit();
-        assertThat(getStudentFromDataBase()).contains(student1, student2);
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
+        assertThat(getStudentFromDataBase()).containsExactlyInAnyOrder(student1, student2);
     }
 
     @Test
     public void deleteStudentFromDataBase() {
         addTestStudentToDataBase(student1);
+        addTestStudentToDataBase(student2);
         entityManager.getTransaction().begin();
         studentRepository.deleteStudent(student1);
         entityManager.getTransaction().commit();
-        assertThat(getStudentFromDataBase()).isEmpty();
-        assertThat(entityManager.getTransaction().isActive()).isFalse();
-    }
-
-    @Test
-    public void findByIdAStudentWhenItDoesNotExist() {
-        addTestStudentToDataBase(student1);
-        assertThat(studentRepository.findById(0)).isNull();
-    }
-
-    @Test
-    public void findByIdAStudentWhenItExists() {
-        addTestStudentToDataBase(student1);
-        addTestStudentToDataBase(student2);
-        assertThat(studentRepository.findById(student1.getId())).isEqualTo(student1);
+        assertThat(getStudentFromDataBase()).containsExactly(student2);
     }
 
 
@@ -107,6 +93,5 @@ public class StudentRepositoryMysqlIT {
 
     private List<Student> getStudentFromDataBase() {
         return entityManager.createQuery("select s from Student s", Student.class).getResultList();
-
     }
 }

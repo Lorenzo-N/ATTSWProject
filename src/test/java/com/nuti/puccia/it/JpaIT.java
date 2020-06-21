@@ -2,15 +2,20 @@ package com.nuti.puccia.it;
 
 import com.nuti.puccia.model.Exam;
 import com.nuti.puccia.model.Student;
+import com.nuti.puccia.transaction_manager.TransactionManager;
+import com.nuti.puccia.transaction_manager.mysql.TransactionManagerMysql;
 import org.junit.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import java.util.ArrayList;
+import javax.persistence.RollbackException;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JpaIT {
     private static EntityManagerFactory entityManagerFactory;
@@ -55,7 +60,7 @@ public class JpaIT {
 
     @Test
     public void testExam() {
-        Exam exam = new Exam("ATTSW", new ArrayList<>());
+        Exam exam = new Exam("ATTSW", new LinkedHashSet<>());
         assertThat(exam.getId()).isEqualTo(0);
         entityManager.getTransaction().begin();
         entityManager.persist(exam);
@@ -68,7 +73,7 @@ public class JpaIT {
 
     @Test
     public void testExamStudents() {
-        Exam exam = new Exam("ATTSW", new ArrayList<>());
+        Exam exam = new Exam("ATTSW", new LinkedHashSet<>());
         Student student1 = new Student("Andrea", "Puccia");
         Student student2 = new Student("Lorenzo", "Nuti");
         Student student3 = new Student("Mario", "Rossi");
@@ -84,5 +89,30 @@ public class JpaIT {
 
         entityManager.refresh(exam);
         assertThat(exam.getStudents()).containsExactly(student2, student1, student3);
+    }
+
+    @Test
+    public void testExamReservationsUniqueConstraint() {
+        Student student = new Student("Andrea", "Puccia");
+        Exam exam = new Exam("ATTSW", new LinkedHashSet<>());
+        entityManager.getTransaction().begin();
+        entityManager.persist(exam);
+        entityManager.persist(student);
+        entityManager.getTransaction().commit();
+
+        EntityManager em2 = entityManagerFactory.createEntityManager();
+        Exam exam2 = em2.find(Exam.class, exam.getId());
+        em2.getTransaction().begin();
+        exam2.addStudent(student);
+        em2.getTransaction().commit();
+
+        assertThatThrownBy(() -> {
+            entityManager.getTransaction().begin();
+            exam.addStudent(student);
+            entityManager.getTransaction().commit();
+        }).isInstanceOf(RollbackException.class);
+
+        em2.refresh(exam2);
+        assertThat(exam2.getStudents()).containsExactly(student);
     }
 }

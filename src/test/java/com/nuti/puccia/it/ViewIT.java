@@ -7,6 +7,8 @@ import com.nuti.puccia.repository.StudentRepository;
 import com.nuti.puccia.repository.mysql.ExamRepositoryMysql;
 import com.nuti.puccia.repository.mysql.StudentRepositoryMysql;
 import com.nuti.puccia.service_layer.ServiceLayer;
+import com.nuti.puccia.transaction_manager.TransactionManager;
+import com.nuti.puccia.transaction_manager.mysql.TransactionManagerMysql;
 import com.nuti.puccia.view.swing.ExamReservationsSwingView;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
@@ -21,6 +23,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,7 +61,8 @@ public class ViewIT extends AssertJSwingJUnitTestCase {
         GuiActionRunner.execute(() -> {
             examRepository = new ExamRepositoryMysql(entityManager);
             studentRepository = new StudentRepositoryMysql(entityManager);
-            serviceLayer = new ServiceLayer(studentRepository, examRepository);
+            TransactionManager transactionManager = new TransactionManagerMysql(entityManager);
+            ServiceLayer serviceLayer = new ServiceLayer(transactionManager);
             view = new ExamReservationsSwingView();
             controller = new Controller(view, serviceLayer);
             view.setController(controller);
@@ -69,8 +73,8 @@ public class ViewIT extends AssertJSwingJUnitTestCase {
 
         student1 = new Student("Andrea", "Puccia");
         student2 = new Student("Lorenzo", "Nuti");
-        exam1 = new Exam("ATTSW", new ArrayList<>(Collections.singletonList(student1)));
-        exam2 = new Exam("Analisi", new ArrayList<>(Collections.singletonList(student2)));
+        exam1 = new Exam("ATTSW", new LinkedHashSet<>(Collections.singletonList(student1)));
+        exam2 = new Exam("Analisi", new LinkedHashSet<>(Collections.singletonList(student2)));
     }
 
     @Override

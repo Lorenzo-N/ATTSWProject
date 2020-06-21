@@ -16,15 +16,21 @@ public class TransactionManagerMysql implements TransactionManager {
 
     @Override
     public <T> T executeTransaction(TransactionFunction<T> code) {
+        return executeTransaction(code, "Transaction rolled back");
+    }
+
+    @Override
+    public <T> T executeTransaction(TransactionFunction<T> code, String errorMessage) {
         try {
             entityManager.getTransaction().begin();
             T result = code.apply(new ExamRepositoryMysql(entityManager), new StudentRepositoryMysql(entityManager));
             entityManager.getTransaction().commit();
             return result;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             entityManager.getTransaction().rollback();
             System.out.println("Rollback: " + e.getMessage() + e.getClass());
-            throw new RuntimeException("Transaction rolled back");
+            throw new Error(errorMessage);
         }
     }
+
 }

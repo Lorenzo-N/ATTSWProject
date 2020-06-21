@@ -4,8 +4,6 @@ import com.nuti.puccia.model.Student;
 import com.nuti.puccia.repository.StudentRepository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
 import java.util.List;
 
 public class StudentRepositoryMysql implements StudentRepository {
@@ -28,16 +26,5 @@ public class StudentRepositoryMysql implements StudentRepository {
     @Override
     public List<Student> findAll() {
         return entityManager.createQuery("select s from Student s order by s.surname, s.name", Student.class).getResultList();
-    }
-
-    @Override
-    public Student findById(long id) {
-        TypedQuery<Student> query = entityManager.createQuery("select s from Student s where s.id = :id", Student.class);
-        query.setParameter("id", id);
-        try {
-            return query.getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
     }
 }

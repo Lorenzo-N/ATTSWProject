@@ -1,7 +1,6 @@
 package com.nuti.puccia.model;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,15 +13,9 @@ public class Exam {
     private String name;
     @ManyToMany
     @OrderBy("surname, name")
-//    private Collection<Student> students;
     private Set<Student> students;
 
     public Exam() {
-    }
-
-    public Exam(String name, Collection<Student> students) {
-        this.name = name;
-//        this.students = students;
     }
 
     public Exam(String name, Set<Student> students) {
@@ -66,16 +59,12 @@ public class Exam {
     }
 
     public void addStudent(Student student) {
-//        if (students.contains(student))
-//            throw new IllegalArgumentException("Student " + student.toString() +
-//                    " already present in " + this.toString() + "!");
+        if (students.contains(student))
+            throw new Error("Student " + student.toString() + " already present in " + this.toString() + "!");
         students.add(student);
     }
 
     public void removeStudent(Student student) {
-//        if (!students.contains(student))
-//            throw new IllegalArgumentException("Student " + student.toString() +
-//                    " not present in " + this.toString() + "!");
         students.remove(student);
     }
 
