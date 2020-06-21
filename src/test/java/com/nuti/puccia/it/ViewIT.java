@@ -3,6 +3,7 @@ package com.nuti.puccia.it;
 import com.nuti.puccia.controller.Controller;
 import com.nuti.puccia.model.Exam;
 import com.nuti.puccia.model.Student;
+import com.nuti.puccia.repository.ExamRepository;
 import com.nuti.puccia.repository.StudentRepository;
 import com.nuti.puccia.repository.mysql.ExamRepositoryMysql;
 import com.nuti.puccia.repository.mysql.StudentRepositoryMysql;
@@ -21,8 +22,6 @@ import org.junit.runner.RunWith;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +33,6 @@ public class ViewIT extends AssertJSwingJUnitTestCase {
 
     private ExamRepositoryMysql examRepository;
     private StudentRepository studentRepository;
-    private ServiceLayer serviceLayer;
     private ExamReservationsSwingView view;
     private Controller controller;
 
@@ -73,8 +71,8 @@ public class ViewIT extends AssertJSwingJUnitTestCase {
 
         student1 = new Student("Andrea", "Puccia");
         student2 = new Student("Lorenzo", "Nuti");
-        exam1 = new Exam("ATTSW", new LinkedHashSet<>(Collections.singletonList(student1)));
-        exam2 = new Exam("Analisi", new LinkedHashSet<>(Collections.singletonList(student2)));
+        exam1 = new Exam("ATTSW", new LinkedHashSet<>());
+        exam2 = new Exam("Analisi", new LinkedHashSet<>());
     }
 
     @Override
@@ -89,41 +87,136 @@ public class ViewIT extends AssertJSwingJUnitTestCase {
 
     @Test
     @GUITest
-    public void deleteExamWhenItDoesNotExist() {
-        studentRepository.addStudent(student1);
+    public void deleteExamWhenItDoesNotExistOnDb() {
+        entityManager.getTransaction().begin();
         examRepository.addExam(exam1);
+        examRepository.addExam(exam2);
+        entityManager.getTransaction().commit();
         GuiActionRunner.execute(() -> controller.showAllExams());
-        GuiActionRunner.execute(() -> view.getExamModel().addElement(exam2));
-        window.list("ExamList").selectItem(1);
+
+        window.list("ExamList").selectItem(0);
+
+        deleteExamFromDataBase(exam2);
+
         window.button("DeleteExam").click();
         assertThat(window.list("ExamList").contents()).containsExactly(exam1.toString());
         assertThat(window.label("ErrorLabel").text()).isEqualTo("Exam " + exam2.toString() + " does not exist!");
     }
 
+
     @Test
     @GUITest
-    public void deleteStudentWhenHeDoesNotExist() {
+    public void deleteStudentWhenHeDoesNotExistOnDb() {
+        entityManager.getTransaction().begin();
         studentRepository.addStudent(student1);
-        GuiActionRunner.execute(() -> controller.showAllStudents());
-        GuiActionRunner.execute(() -> view.getStudentModel().addElement(student2));
-        window.list("StudentList").selectItem(1);
+        studentRepository.addStudent(student2);
+        examRepository.addExam(exam1);
+        examRepository.addReservation(exam1, student2);
+        entityManager.getTransaction().commit();
+        GuiActionRunner.execute(() -> {
+            controller.showAllStudents();
+            controller.showAllExams();
+        });
+
+        window.list("StudentList").selectItem(0);
+        window.list("ExamList").selectItem(0);
+
+        deleteStudentFromDataBase(student2);
+
         window.button("DeleteStudent").click();
         assertThat(window.list("StudentList").contents()).containsExactly(student1.toString());
+        assertThat(window.list("ReservationList").contents()).isEmpty();
         assertThat(window.label("ErrorLabel").text()).isEqualTo("Student " + student2.toString() + " does not exist!");
     }
 
     @Test
     @GUITest
-    public void deleteReservationWhenItDoesNotExist() {
+    public void addReservationWhenItAlreadyExistOnDb() {
+        entityManager.getTransaction().begin();
         studentRepository.addStudent(student1);
+        studentRepository.addStudent(student2);
         examRepository.addExam(exam1);
-        GuiActionRunner.execute(() -> controller.showAllExams());
+        entityManager.getTransaction().commit();
+        GuiActionRunner.execute(() -> {
+            controller.showAllStudents();
+            controller.showAllExams();
+        });
         window.list("ExamList").selectItem(0);
-        GuiActionRunner.execute(() -> view.getReservationModel().addElement(student2));
-        window.list("ReservationList").selectItem(1);
+        window.list("StudentList").selectItem(0);
+
+        addReservationToDataBase(exam1, student2);
+
+        window.button("AddReservation").click();
+        assertThat(window.list("ReservationList").contents()).containsExactly(student2.toString());
+        assertThat(window.label("ErrorLabel").text()).isEqualTo("Student " + student2.toString() + " already present in " + exam1.toString() + "!");
+    }
+
+    @Test
+    @GUITest
+    public void deleteReservationWhenItDoesNotExistOnDb() {
+        entityManager.getTransaction().begin();
+        studentRepository.addStudent(student1);
+        studentRepository.addStudent(student2);
+        examRepository.addExam(exam1);
+        examRepository.addReservation(exam1,student2);
+        examRepository.addReservation(exam1,student1);
+        entityManager.getTransaction().commit();
+        GuiActionRunner.execute(() -> controller.showAllExams());
+
+        window.list("ExamList").selectItem(0);
+        window.list("ReservationList").selectItem(0);
+
+        deleteReservationToDataBase(exam1, student2);
+
         window.button("DeleteReservation").click();
         assertThat(window.list("ReservationList").contents()).containsExactly(student1.toString());
-        assertThat(window.label("ErrorLabel").text()).isEqualTo("Student " + student2.toString() + " not present in " + exam1.toString() + "!");
+        assertThat(window.label("ErrorLabel").text()).isEqualTo("");
+    }
+
+    private void deleteExamFromDataBase(Exam exam) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        ExamRepository er = new ExamRepositoryMysql(em);
+        Exam e = em.find(Exam.class, exam.getId());
+        em.getTransaction().begin();
+        er.deleteExam(e);
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    private void deleteStudentFromDataBase(Student student) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        StudentRepository sr = new StudentRepositoryMysql(em);
+        ExamRepository er = new ExamRepositoryMysql(em);
+        Student s = em.find(Student.class, student.getId());
+        em.getTransaction().begin();
+        er.deleteStudentReservations(s);
+        sr.deleteStudent(s);
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    private void addReservationToDataBase(Exam exam, Student student) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        StudentRepository sr = new StudentRepositoryMysql(em);
+        ExamRepository er = new ExamRepositoryMysql(em);
+        Student s = em.find(Student.class, student.getId());
+        Exam e = em.find(Exam.class, exam.getId());
+        em.getTransaction().begin();
+        er.addReservation(e, s);
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    private void deleteReservationToDataBase(Exam exam, Student student) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        StudentRepository sr = new StudentRepositoryMysql(em);
+        ExamRepository er = new ExamRepositoryMysql(em);
+        Student s = em.find(Student.class, student.getId());
+        Exam e = em.find(Exam.class, exam.getId());
+        em.getTransaction().begin();
+        er.deleteReservation(e, s);
+        em.getTransaction().commit();
+        em.close();
     }
 
 }
